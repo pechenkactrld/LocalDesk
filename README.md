@@ -9,14 +9,9 @@
 
 ---
 
-## Preview
-
-> Put screenshots into `screenshots/` folder.
-
-### Main Window
 
 ```md
-![Main Window](screenshots/main.png)
+![Logo](screenshots/logo.png)
 ```
 
 
@@ -39,9 +34,9 @@
 
 ## Screenshots
 
-### Hardware Analysis
+### Main window
 
-![Hardware Analysis](screenshots/hardware.png)
+![Main window](screenshots/main.png)
 
 ### Model Download Progress
 
