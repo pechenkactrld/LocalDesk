@@ -82,7 +82,7 @@ python main.py
 * [x] Automatic model recommendation
 * [x] Model download support
 * [x] Chat saving/loading
-* [ ] Streaming responses
+* [x] Streaming responses
 * [ ] Markdown rendering
 * [ ] Plugin API
 * [ ] OCR integration
