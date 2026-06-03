@@ -4,7 +4,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.11+-blue)
 ![PyQt6](https://img.shields.io/badge/UI-PyQt6-green)
-![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20Windows-orange)
+![Platform](https://shields.io)
 ![License](https://img.shields.io/badge/License-MIT-purple)
 
 ---
@@ -53,8 +53,7 @@ chmod +x LumiDesk.bin
 ## Requirements
 
 * Python 3.11+
-* Ollama installed
-* Tesseract in PATH for images
+* Ollama installed and in PATH
 * Recommended: NVIDIA GPU for larger models
 
 ---
@@ -69,8 +68,6 @@ chmod +x LumiDesk.bin
 * [x] Streaming responses
 * [ ] Markdown rendering
 * [ ] Plugin API
-* [ ] OCR integration
-* [ ] Vision model support
 * [ ] RAG support
 * [ ] Voice features
 
