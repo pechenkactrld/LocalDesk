@@ -4,7 +4,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.11+-blue)
 ![PyQt6](https://img.shields.io/badge/UI-PyQt6-green)
-![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20Windows-orange)
+![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20Windows%20%7C%20macOS-orange)
 ![License](https://img.shields.io/badge/License-MIT-purple)
 
 ---
