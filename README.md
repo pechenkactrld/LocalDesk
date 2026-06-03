@@ -35,6 +35,12 @@
 Download Ollama from their official web site and install it
 Download LumiDesk.exe from GitHub releases
 
+### MacOS
+
+Download Ollama from their official web site and install it
+Download LumiDesk.dmg file from GitHub releases
+Drag it to applications folder
+
 ### Linux
 
 Download Ollama from their official web site and install it
@@ -66,6 +72,9 @@ chmod +x LumiDesk.bin
 * [x] Model download support
 * [x] Chat saving/loading
 * [x] Streaming responses
+* [ ] Settings tab
+* [ ] Temperature controls
+* [ ] Hiding into a tray icon
 * [ ] Markdown rendering
 * [ ] Plugin API
 * [ ] RAG support
