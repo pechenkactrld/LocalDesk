@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LumiDesk — Desktop AI Workspace for Ollama</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #070A14;
+    --bg2: #0B1020;
+    --bg3: #0D1428;
+    --surface: rgba(255,255,255,0.04);
+    --surface2: rgba(255,255,255,0.07);
+    --border: rgba(255,255,255,0.09);
+    --border2: rgba(255,255,255,0.16);
+    --text: #EAF2FF;
+    --text2: rgba(234,242,255,0.65);
+    --text3: rgba(234,242,255,0.38);
+    --accent: #3B82F6;
+    --accent2: #60A5FA;
+    --green: #6EE7B7;
+    --green2: rgba(110,231,183,0.18);
+    --green-border: rgba(110,231,183,0.28);
+    --font-display: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── noise overlay ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.025;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── glowing orbs ── */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: 0;
+    animation: orbFloat 12s ease-in-out infinite;
+  }
+  .orb1 {
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%);
+    top: -100px; left: -150px;
+    animation-delay: 0s;
+  }
+  .orb2 {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(110,231,183,0.10) 0%, transparent 70%);
+    top: 40%; right: -100px;
+    animation-delay: -4s;
+  }
+  .orb3 {
+    width: 350px; height: 350px;
+    background: radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%);
+    bottom: 10%; left: 20%;
+    animation-delay: -8s;
+  }
+
+  @keyframes orbFloat {
+    0%, 100% { transform: translateY(0px) scale(1); }
+    50% { transform: translateY(-30px) scale(1.05); }
+  }
+
+  /* ── layout ── */
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  /* ── nav ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 18px 0;
+    background: rgba(7,10,20,0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: all 0.3s ease;
+  }
+  nav .inner {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .nav-logo {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 22px;
+    color: var(--text);
+    text-decoration: none;
+    letter-spacing: -0.5px;
+  }
+  .nav-logo span { color: var(--green); }
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+  }
+  .nav-links a {
+    color: var(--text2);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 400;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--text); }
+  .nav-cta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+  .btn-ghost {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text2);
+  }
+  .btn-ghost:hover {
+    background: var(--surface2);
+    border-color: var(--border2);
+    color: var(--text);
+  }
+  .btn-primary {
+    background: rgba(59,130,246,0.18);
+    border-color: rgba(59,130,246,0.45);
+    color: #93C5FD;
+  }
+  .btn-primary:hover {
+    background: rgba(59,130,246,0.28);
+    border-color: rgba(59,130,246,0.6);
+    color: #BFDBFE;
+  }
+  .btn-green {
+    background: rgba(110,231,183,0.12);
+    border-color: rgba(110,231,183,0.30);
+    color: var(--green);
+  }
+  .btn-green:hover {
+    background: rgba(110,231,183,0.20);
+    transform: translateY(-1px);
+  }
+  .btn-lg {
+    padding: 14px 28px;
+    font-size: 15px;
+    border-radius: 14px;
+  }
+
+  /* ── hero ── */
+  .hero {
+    padding: 180px 0 120px;
+    text-align: center;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px 6px 10px;
+    border-radius: 100px;
+    background: rgba(110,231,183,0.08);
+    border: 1px solid rgba(110,231,183,0.20);
+    font-size: 13px;
+    color: var(--green);
+    margin-bottom: 36px;
+    animation: fadeUp 0.8s ease both;
+  }
+  .badge-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse 2s ease infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .hero h1 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(48px, 7vw, 88px);
+    line-height: 1.0;
+    letter-spacing: -2px;
+    margin-bottom: 28px;
+    animation: fadeUp 0.8s ease 0.1s both;
+  }
+  .hero h1 .line2 {
+    display: block;
+    background: linear-gradient(135deg, #60A5FA 0%, #6EE7B7 60%, #A78BFA 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-sub {
+    font-size: 19px;
+    color: var(--text2);
+    max-width: 560px;
+    margin: 0 auto 48px;
+    line-height: 1.65;
+    font-weight: 300;
+    animation: fadeUp 0.8s ease 0.2s both;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: fadeUp 0.8s ease 0.3s both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── window mockup ── */
+  .mockup-wrap {
+    margin-top: 80px;
+    padding: 0 16px;
+    animation: fadeUp 0.8s ease 0.4s both;
+  }
+  .mockup-frame {
+    background: var(--bg2);
+    border-radius: 20px;
+    border: 1px solid var(--border2);
+    overflow: hidden;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.03),
+      0 40px 120px rgba(0,0,0,0.7),
+      0 0 80px rgba(59,130,246,0.08),
+      inset 0 1px 0 rgba(255,255,255,0.06);
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .mockup-titlebar {
+    background: rgba(255,255,255,0.03);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .traffic-lights {
+    display: flex;
+    gap: 7px;
+  }
+  .tl {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+  }
+  .tl-red { background: #FF5F57; }
+  .tl-yellow { background: #FEBC2E; }
+  .tl-green { background: #28C840; }
+  .mockup-title {
+    font-size: 13px;
+    color: var(--text3);
+    flex: 1;
+    text-align: center;
+    font-weight: 400;
+  }
+  .mockup-body {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: 460px;
+  }
+  .mockup-sidebar {
+    border-right: 1px solid var(--border);
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .sidebar-section-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .hw-row {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 12px;
+    color: var(--text2);
+    margin-bottom: 6px;
+  }
+  .hw-row strong {
+    display: block;
+    color: var(--text);
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+  .rec-card {
+    background: var(--green2);
+    border: 1px solid var(--green-border);
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 12px;
+  }
+  .rec-label {
+    font-size: 11px;
+    color: rgba(110,231,183,0.7);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 4px;
+  }
+  .rec-model {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--green);
+  }
+  .rec-reason {
+    color: rgba(110,231,183,0.7);
+    font-size: 11px;
+    margin-top: 4px;
+    line-height: 1.5;
+  }
+  .model-select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: var(--text);
+    width: 100%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .model-tag {
+    font-size: 11px;
+    color: var(--accent2);
+    background: rgba(59,130,246,0.12);
+    border: 1px solid rgba(59,130,246,0.25);
+    border-radius: 6px;
+    padding: 2px 7px;
+  }
+  .sidebar-btn {
+    background: rgba(59,130,246,0.14);
+    border: 1px solid rgba(59,130,246,0.30);
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 13px;
+    color: #93C5FD;
+    text-align: center;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-weight: 500;
+  }
+  .mockup-chat {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .chat-msg {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 80%;
+  }
+  .chat-msg.user { align-self: flex-end; align-items: flex-end; }
+  .chat-msg.ai { align-self: flex-start; }
+  .chat-bubble {
+    padding: 12px 16px;
+    border-radius: 16px;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .user .chat-bubble {
+    background: rgba(110,231,183,0.12);
+    border: 1px solid rgba(110,231,183,0.25);
+    color: #EAFBF3;
+    border-bottom-right-radius: 4px;
+  }
+  .ai .chat-bubble {
+    background: rgba(59,130,246,0.12);
+    border: 1px solid rgba(59,130,246,0.25);
+    color: #EAF2FF;
+    border-bottom-left-radius: 4px;
+  }
+  .chat-role {
+    font-size: 11px;
+    color: var(--text3);
+    padding: 0 4px;
+  }
+  .chat-input-row {
+    margin-top: auto;
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+  .chat-input-box {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--text3);
+  }
+  .chat-send-btn {
+    background: rgba(59,130,246,0.22);
+    border: 1px solid rgba(59,130,246,0.45);
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-size: 13px;
+    color: #93C5FD;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .stream-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 14px;
+    background: #60A5FA;
+    border-radius: 1px;
+    margin-left: 2px;
+    vertical-align: middle;
+    animation: blink 0.9s ease infinite;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  /* ── section ── */
+  section {
+    padding: 100px 0;
+  }
+  .section-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--green);
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(32px, 4vw, 48px);
+    letter-spacing: -1px;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  .section-sub {
+    font-size: 17px;
+    color: var(--text2);
+    font-weight: 300;
+    max-width: 540px;
+    line-height: 1.7;
+  }
+  .text-center { text-align: center; }
+  .section-sub.centered { margin: 0 auto; }
+
+  /* ── features grid ── */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 64px;
+  }
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px 28px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .feature-card:hover {
+    background: var(--surface2);
+    border-color: var(--border2);
+    transform: translateY(-3px);
+  }
+  .feature-card:hover::before { opacity: 1; }
+  .feature-icon {
+    width: 48px; height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    margin-bottom: 20px;
+  }
+  .icon-blue { background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.25); }
+  .icon-green { background: rgba(110,231,183,0.12); border: 1px solid rgba(110,231,183,0.22); }
+  .icon-purple { background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.22); }
+  .icon-orange { background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.22); }
+  .icon-pink { background: rgba(244,114,182,0.12); border: 1px solid rgba(244,114,182,0.22); }
+  .icon-cyan { background: rgba(34,211,238,0.12); border: 1px solid rgba(34,211,238,0.22); }
+  .feature-card h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 18px;
+    margin-bottom: 10px;
+    letter-spacing: -0.3px;
+  }
+  .feature-card p {
+    font-size: 14px;
+    color: var(--text2);
+    line-height: 1.65;
+    font-weight: 300;
+  }
+
+  /* ── roadmap ── */
+  .roadmap-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px 80px;
+    margin-top: 64px;
+  }
+  .roadmap-col h3 {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 24px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .roadmap-col.done h3 { color: var(--green); border-color: rgba(110,231,183,0.2); }
+  .roadmap-col.upcoming h3 { color: rgba(167,139,250,0.9); border-color: rgba(167,139,250,0.2); }
+  .roadmap-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 15px;
+    color: var(--text2);
+    font-weight: 300;
+  }
+  .roadmap-item:last-child { border-bottom: none; }
+  .check-icon {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .check-done { background: rgba(110,231,183,0.2); color: var(--green); border: 1px solid rgba(110,231,183,0.35); }
+  .check-todo { background: rgba(167,139,250,0.1); color: rgba(167,139,250,0.7); border: 1px dashed rgba(167,139,250,0.35); }
+  .check-todo::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: rgba(167,139,250,0.5); }
+
+  /* ── install ── */
+  .install-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 64px;
+    margin-top: 64px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+  }
+  .install-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 36px;
+    letter-spacing: -1px;
+    line-height: 1.15;
+    margin-bottom: 16px;
+  }
+  .install-sub {
+    color: var(--text2);
+    font-size: 15px;
+    font-weight: 300;
+    line-height: 1.7;
+    margin-bottom: 32px;
+  }
+  .platform-tabs {
+    display: flex;
+    gap: 4px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 20px;
+    width: fit-content;
+  }
+  .platform-tab {
+    padding: 7px 16px;
+    border-radius: 9px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text3);
+    border: none;
+    background: none;
+    font-family: var(--font-body);
+  }
+  .platform-tab.active {
+    background: rgba(59,130,246,0.18);
+    color: #93C5FD;
+    border: 1px solid rgba(59,130,246,0.30);
+  }
+  .code-block {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 20px 22px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    color: #94A3B8;
+    position: relative;
+  }
+  .code-line .kw { color: #7DD3FC; }
+  .code-line .str { color: #86EFAC; }
+  .code-line .cmt { color: #475569; }
+  .code-copy {
+    position: absolute;
+    top: 12px; right: 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 11px;
+    color: var(--text3);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font-body);
+  }
+  .code-copy:hover { color: var(--text2); border-color: var(--border2); }
+  .install-note {
+    margin-top: 14px;
+    font-size: 12px;
+    color: var(--text3);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .install-note a {
+    color: rgba(167,139,250,0.8);
+    text-decoration: none;
+  }
+  .install-note a:hover { color: rgba(167,139,250,1); }
+
+  /* ── stack section ── */
+  .stack-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 40px;
+    justify-content: center;
+  }
+  .stack-pill {
+    padding: 10px 20px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    font-size: 14px;
+    color: var(--text2);
+    background: var(--surface);
+    transition: all 0.2s;
+  }
+  .stack-pill:hover {
+    border-color: var(--border2);
+    color: var(--text);
+    background: var(--surface2);
+  }
+
+  /* ── divider ── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0;
+  }
+
+  /* ── footer ── */
+  footer {
+    padding: 60px 0 40px;
+    border-top: 1px solid var(--border);
+  }
+  .footer-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+  .footer-logo {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 20px;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .footer-logo span { color: var(--green); }
+  .footer-text {
+    font-size: 13px;
+    color: var(--text3);
+    margin-top: 6px;
+  }
+  .footer-links {
+    display: flex;
+    gap: 28px;
+    list-style: none;
+  }
+  .footer-links a {
+    font-size: 13px;
+    color: var(--text3);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--text2); }
+
+  /* ── scroll reveal ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── responsive ── */
+  @media (max-width: 768px) {
+    .container { padding: 0 20px; }
+    nav .inner { padding: 0 20px; }
+    .nav-links { display: none; }
+    .hero { padding: 140px 0 80px; }
+    .mockup-body { grid-template-columns: 1fr; }
+    .mockup-sidebar { display: none; }
+    .features-grid { grid-template-columns: 1fr; }
+    .roadmap-grid { grid-template-columns: 1fr; gap: 36px; }
+    .install-section { grid-template-columns: 1fr; padding: 36px 28px; gap: 36px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="inner">
+    <a class="nav-logo" href="#">Lumi<span>Desk</span></a>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#roadmap">Roadmap</a></li>
+      <li><a href="#install">Install</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a href="https://github.com/pechenkactrld/LumiDesk" class="btn btn-ghost" target="_blank">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+        GitHub
+      </a>
+      <a href="#install" class="btn btn-primary">Download</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-badge">
+      <div class="badge-dot"></div>
+      Open source · Python · PyQt6
+    </div>
+    <h1>
+      Your local AI<br>
+      <span class="line2">workspace</span>
+    </h1>
+    <p class="hero-sub">
+      A desktop GUI for Ollama that knows your hardware, recommends the right model, and keeps everything private — no cloud, no subscriptions.
+    </p>
+    <div class="hero-actions">
+      <a href="https://github.com/pechenkactrld/LumiDesk" class="btn btn-green btn-lg" target="_blank">
+        ⭐ Star on GitHub
+      </a>
+      <a href="#install" class="btn btn-ghost btn-lg">Get started</a>
+    </div>
+
+    <!-- APP MOCKUP -->
+    <div class="mockup-wrap">
+      <div class="mockup-frame">
+        <div class="mockup-titlebar">
+          <div class="traffic-lights">
+            <div class="tl tl-red"></div>
+            <div class="tl tl-yellow"></div>
+            <div class="tl tl-green"></div>
+          </div>
+          <span class="mockup-title">LumiDesk</span>
+          <div style="width: 52px;"></div>
+        </div>
+        <div class="mockup-body">
+          <div class="mockup-sidebar">
+            <div>
+              <div class="sidebar-section-title">Hardware</div>
+              <div class="hw-row"><strong>CPU</strong>AMD Ryzen 9 · 16 cores · 4800 MHz</div>
+              <div class="hw-row"><strong>RAM</strong>22.4 GB available / 32 GB</div>
+              <div class="hw-row"><strong>GPU</strong>NVIDIA RTX 4070 · 9.2 GB free</div>
+            </div>
+            <div>
+              <div class="sidebar-section-title">Recommendation</div>
+              <div class="rec-card">
+                <div class="rec-label">Best fit for your PC</div>
+                <div class="rec-model">qwen2.5:14b</div>
+                <div class="rec-reason">GPU mode · 9.2 GiB free VRAM · disk OK</div>
+              </div>
+            </div>
+            <div>
+              <div class="sidebar-section-title">Model</div>
+              <div class="model-select">
+                <span>qwen2.5:14b</span>
+                <span class="model-tag">local</span>
+              </div>
+              <div style="height:8px;"></div>
+              <button class="sidebar-btn">Download model</button>
+            </div>
+          </div>
+          <div class="mockup-chat">
+            <div class="chat-msg user">
+              <div class="chat-role">You</div>
+              <div class="chat-bubble">Write a Python function that parses JSON from a file and returns a typed dataclass</div>
+            </div>
+            <div class="chat-msg ai">
+              <div class="chat-role">qwen2.5:14b</div>
+              <div class="chat-bubble">
+                Sure! Here's a typed approach using <code style="background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:4px;font-size:12px;">dataclasses</code> and <code style="background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:4px;font-size:12px;">json</code>:<br><br>
+                <span style="color:#7DD3FC;">from</span> dataclasses <span style="color:#7DD3FC;">import</span> dataclass<br>
+                <span style="color:#7DD3FC;">import</span> json<br><br>
+                <span style="color:#86EFAC;">@dataclass</span><br>
+                <span style="color:#7DD3FC;">class</span> <span style="color:#FCD34D;">Config</span>:<span class="stream-cursor"></span>
+              </div>
+            </div>
+            <div class="chat-input-row">
+              <div class="chat-input-box">Ask anything...</div>
+              <div class="chat-send-btn">Send</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">Features</div>
+      <div class="section-title">Everything you need,<br>nothing you don't</div>
+      <p class="section-sub">LumiDesk wraps Ollama in a polished desktop experience designed for developers who want full control.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <div class="feature-icon icon-green">🧠</div>
+        <h3>Hardware-aware recommendations</h3>
+        <p>Scans your CPU, RAM, and NVIDIA VRAM on startup and recommends the largest model that will run comfortably — no guessing.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon icon-blue">⚡</div>
+        <h3>Real-time streaming</h3>
+        <p>Responses stream token-by-token with a blinking cursor. Incremental UTF-8 decoding means nothing breaks on non-ASCII output.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon icon-purple">💬</div>
+        <h3>Conversation memory</h3>
+        <p>Keeps context across the last 12 messages so the model actually remembers what you were just talking about.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon icon-orange">📁</div>
+        <h3>File attachments</h3>
+        <p>Drop a <code style="background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:4px;font-size:12px;">.py</code> or <code style="background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:4px;font-size:12px;">.txt</code> file into the chat and it's included inline. Vision models get images passed directly.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon icon-cyan">💾</div>
+        <h3>Save &amp; restore chats</h3>
+        <p>Every conversation can be saved as JSON and reopened later. Your chat history stays local, always.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon icon-pink">🛑</div>
+        <h3>Stop generation</h3>
+        <p>Kill a running response instantly. The partial output is kept so you can see what the model had before you stopped it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DIVIDER -->
+<div class="container"><hr class="divider"></div>
+
+<!-- ROADMAP -->
+<section id="roadmap">
+  <div class="container">
+    <div class="reveal text-center">
+      <div class="section-label">Roadmap</div>
+      <div class="section-title">What's built, what's coming</div>
+      <p class="section-sub centered">The core is solid. These are next.</p>
+    </div>
+    <div class="roadmap-grid reveal">
+      <div class="roadmap-col done">
+        <h3>✓ Shipped</h3>
+        <div class="roadmap-item">
+          <span class="check-icon check-done">✓</span>
+          Chat UI with streaming
+        </div>
+        <div class="roadmap-item">
+          <span class="check-icon check-done">✓</span>
+          Hardware detection
+        </div>
+        <div class="roadmap-item">
+          <span class="check-icon check-done">✓</span>
+          Automatic model recommendation
+        </div>
+        <div class="roadmap-item">
+          <span class="check-icon check-done">✓</span>
+          Model download via ollama pull
+        </div>
+        <div class="roadmap-item">
+          <span class="check-icon check-done">✓</span>
+          Save &amp; load chat history
+        </div>
+        <div class="roadmap-item">
+          <span class="check-icon check-done">✓</span>
+          File &amp; image attachments
+        </div>
+        <div class="roadmap-item">
+          <span class="check-icon check-done">✓</span>
+          macOS support (Apple Silicon &amp; Intel)
+        </div>
+      </div>
+      <div class="roadmap-col upcoming">
+        <h3>→ v2 planned</h3>
+        <div class="roadmap-item">
+          <span class="check-icon check-todo"></span>
+          Markdown rendering in chat
+        </div>
+        <div class="roadmap-item">
+          <span class="check-icon check-todo"></span>
+          Settings tab (system prompt, username)
+        </div>
+        <div class="roadmap-item">
+          <span class="check-icon check-todo"></span>
+          System tray / quick assistant mode
+        </div>
+        <div class="roadmap-item">
+          <span class="check-icon check-todo"></span>
+          Temperature control via Ollama API
+        </div>
+        <div class="roadmap-item">
+          <span class="check-icon check-todo"></span>
+          RAG support (local documents)
+        </div>
+        <div class="roadmap-item">
+          <span class="check-icon check-todo"></span>
+          Voice commands
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INSTALL -->
+<section id="install">
+  <div class="container">
+    <div class="install-section reveal">
+      <div>
+        <div class="install-title">Get LumiDesk<br>running in minutes</div>
+        <p class="install-sub">Works on Linux, Windows, and macOS. Requires Ollama to be installed and available in your PATH.</p>
+        <div class="hero-actions" style="justify-content: flex-start;">
+          <a href="https://github.com/pechenkactrld/LumiDesk" class="btn btn-primary" target="_blank">View on GitHub →</a>
+          <a href="https://ollama.com" class="btn btn-ghost" target="_blank">Get Ollama</a>
+        </div>
+        <p class="install-note">
+          ⚠️ Windows Defender may warn — no digital signature yet. You can always run from source.
+        </p>
+      </div>
+      <div>
+        <div class="platform-tabs">
+          <button class="platform-tab active" onclick="switchTab(this, 'linux')">Linux</button>
+          <button class="platform-tab" onclick="switchTab(this, 'macos')">macOS</button>
+          <button class="platform-tab" onclick="switchTab(this, 'windows')">Windows</button>
+          <button class="platform-tab" onclick="switchTab(this, 'source')">From source</button>
+        </div>
+        <div id="tab-linux" class="code-block">
+          <button class="code-copy" onclick="copyCode('tab-linux')">Copy</button>
+          <div class="code-line"><span class="cmt"># 1. Install Ollama</span></div>
+          <div class="code-line"><span class="kw">curl</span> -fsSL https://ollama.com/install.sh <span class="kw">|</span> sh</div>
+          <div class="code-line">&nbsp;</div>
+          <div class="code-line"><span class="cmt"># 2. Download LumiDesk.bin from Releases</span></div>
+          <div class="code-line"><span class="kw">chmod</span> +x LumiDesk.bin</div>
+          <div class="code-line"><span class="kw">./</span>LumiDesk.bin</div>
+        </div>
+        <div id="tab-macos" class="code-block" style="display:none;">
+          <button class="code-copy" onclick="copyCode('tab-macos')">Copy</button>
+          <div class="code-line"><span class="cmt"># 1. Install Ollama from ollama.com</span></div>
+          <div class="code-line"><span class="cmt"># 2. Download LumiDesk.dmg from Releases</span></div>
+          <div class="code-line"><span class="cmt"># 3. Open the .dmg and drag LumiDesk</span></div>
+          <div class="code-line"><span class="cmt">#    to your Applications folder</span></div>
+          <div class="code-line">&nbsp;</div>
+          <div class="code-line"><span class="cmt"># First launch — right-click → Open</span></div>
+          <div class="code-line"><span class="cmt"># to bypass Gatekeeper warning</span></div>
+        </div>
+        <div id="tab-windows" class="code-block" style="display:none;">
+          <button class="code-copy" onclick="copyCode('tab-windows')">Copy</button>
+          <div class="code-line"><span class="cmt"># 1. Install Ollama from ollama.com</span></div>
+          <div class="code-line"><span class="cmt"># 2. Download LumiDesk.exe from Releases</span></div>
+          <div class="code-line"><span class="cmt"># 3. Run it — Defender may warn,</span></div>
+          <div class="code-line"><span class="cmt">#    click "More info → Run anyway"</span></div>
+        </div>
+        <div id="tab-source" class="code-block" style="display:none;">
+          <button class="code-copy" onclick="copyCode('tab-source')">Copy</button>
+          <div class="code-line"><span class="kw">git</span> clone https://github.com/pechenkactrld/LumiDesk</div>
+          <div class="code-line"><span class="kw">cd</span> LumiDesk</div>
+          <div class="code-line"><span class="kw">pip</span> install PyQt6 psutil</div>
+          <div class="code-line"><span class="kw">python</span> main.py</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STACK -->
+<section style="padding: 60px 0 100px;">
+  <div class="container">
+    <div class="reveal text-center">
+      <div class="section-label">Built with</div>
+      <div class="section-title" style="font-size:32px;">Simple, solid stack</div>
+    </div>
+    <div class="stack-items reveal">
+      <span class="stack-pill">Python 3.11+</span>
+      <span class="stack-pill">PyQt6</span>
+      <span class="stack-pill">Ollama</span>
+      <span class="stack-pill">psutil</span>
+      <span class="stack-pill">subprocess</span>
+      <span class="stack-pill">threading</span>
+      <span class="stack-pill">MIT License</span>
+      <span class="stack-pill">Linux · Windows · macOS</span>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div>
+        <a class="footer-logo" href="#">Lumi<span>Desk</span></a>
+        <p class="footer-text">Desktop AI Workspace for Ollama · by pechenka</p>
+      </div>
+      <ul class="footer-links">
+        <li><a href="https://github.com/pechenkactrld/LumiDesk" target="_blank">GitHub</a></li>
+        <li><a href="https://github.com/pechenkactrld/LumiDesk/issues" target="_blank">Issues</a></li>
+        <li><a href="https://ollama.com" target="_blank">Ollama</a></li>
+        <li><a href="https://github.com/pechenkactrld/LumiDesk/blob/main/README.md" target="_blank">Docs</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Tab switching
+  function switchTab(btn, id) {
+    document.querySelectorAll('.platform-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    ['linux','macos','windows','source'].forEach(t => {
+      const el = document.getElementById('tab-' + t);
+      if (el) el.style.display = t === id ? 'block' : 'none';
+    });
+  }
+
+  // Copy code
+  function copyCode(tabId) {
+    const el = document.getElementById(tabId);
+    const lines = el.querySelectorAll('.code-line');
+    const text = Array.from(lines).map(l => l.textContent).join('\n').trim();
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = el.querySelector('.code-copy');
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+  }
+
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  reveals.forEach(el => observer.observe(el));
+
+  // Nav scroll effect
+  const nav = document.querySelector('nav');
+  window.addEventListener('scroll', () => {
+    nav.style.background = window.scrollY > 40
+      ? 'rgba(7,10,20,0.90)'
+      : 'rgba(7,10,20,0.70)';
+  });
+</script>
+</body>
+</html>
