@@ -67,7 +67,7 @@ chmod +x LumiDesk.bin
 * [x] Streaming responses
 * [ ] Settings tab
 * [ ] Temperature controls
-* [ ] Hiding into a tray icon
+* [ ] System tray / quick assistant mode
 * [ ] Markdown rendering
 * [ ] Plugin API
 * [ ] RAG support
