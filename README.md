@@ -9,13 +9,6 @@
 
 ---
 
-
-```md
-![Logo](screenshots/logo.png)
-```
-
----
-
 ## Screenshots
 
 ### Main window
