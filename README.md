@@ -1,4 +1,4 @@
-# LumiDesk
+# LocalDesk
 
 > Modern desktop GUI client for Ollama with hardware-aware model recommendations, local-first workflow, and plugin-ready architecture.
 
@@ -26,25 +26,25 @@
 ### Windows
 
 Download Ollama from their official web site and install it
-Download LumiDesk.exe from GitHub releases
+Download LocalDesk.exe from GitHub releases
 
 ### MacOS
 
 Download Ollama from their official web site and install it
-Download LumiDesk.dmg file from GitHub releases
+Download LocalDesk.dmg file from GitHub releases
 Drag it to applications folder
 
 ### Linux
 
 Download Ollama from their official web site and install it
-Download LumiDesk.bin from GitHub releases or using git clone
+Download LocalDesk.bin from GitHub releases or using git clone
 
 then
 
 ```bash
-cd ~/Folder-with-LumiDesk
-chmod +x LumiDesk.bin
-./LumiDesk.bin
+cd ~/Folder-with-LocalDesk
+chmod +x LocalDesk.bin
+./LocalDesk.bin
 ```
 
 ---
