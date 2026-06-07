@@ -65,8 +65,8 @@ chmod +x LocalDesk.bin
 * [x] Model download support
 * [x] Chat saving/loading
 * [x] Streaming responses
-* [ ] Settings tab
-* [ ] Temperature controls
+* [x] Settings tab
+* [x] Temperature controls
 * [ ] System tray / quick assistant mode
 * [ ] Markdown rendering
 * [ ] Plugin API
