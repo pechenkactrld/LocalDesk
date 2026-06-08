@@ -88,6 +88,9 @@ chmod +x LocalDesk.bin
 
 ---
 
+### Bug reports
+This is the first release — if you find any bugs, please open an issue on GitHub.
+I'll do my best to fix them quickly!
 
 ---
 
