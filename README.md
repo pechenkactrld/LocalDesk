@@ -25,18 +25,18 @@
 
 ### Windows
 
-Download Ollama from their official web site and install it
+Download Ollama from their official web site and install it, 
 Download LocalDesk.exe from GitHub releases
 
 ### MacOS
 
-Download Ollama from their official web site and install it
+Download Ollama from their official web site and install it, 
 Download LocalDesk.dmg file from GitHub releases
 Drag it to applications folder
 
 ### Linux
 
-Download Ollama from their official web site and install it
+Download Ollama from their official web site and install it, 
 Download LocalDesk.bin from GitHub releases or using git clone
 
 then
